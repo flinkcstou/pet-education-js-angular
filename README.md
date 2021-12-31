@@ -16,4 +16,9 @@
 
 # НАЧАЛО JS
 
-> [javascript](JS.md) 
+> [javascript](education-js/JS.md) 
+
+
+## Channels 
+
+> мой телеграм канал https://t.me/nx_kz
