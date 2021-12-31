@@ -1,27 +1,19 @@
-# Education
+# :bulb: Pet Projects Ideas
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 11.2.4.
+> This project about how I will learn other people js development and angular development and other technology from zero to middle developer.
 
-## Development server
+> Проект будет вестись на двух языках русский и английский.
+> Не хейтить за мой уровень владения языками. 
+> В Основном буду стараться писать на английском.
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The app will automatically reload if you change any of the source files.
+# Start as Front-end developer
 
-## Code scaffolding
+> есть очень годный контент как говорится -"`Платина, которая уже никому не нужна, но все еще есть.`"
+> source > https://github.com/acilsd/wrk-fet
 
-Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
+> Мой проект начнется с изучением javascript и буду одновременно буду готовить материал для обучения новых разработчиков. [Почему и зачем](FAQ.md)    
 
-## Build
 
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory. Use the `--prod` flag for a production build.
+# НАЧАЛО JS
 
-## Running unit tests
-
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
-
-## Running end-to-end tests
-
-Run `ng e2e` to execute the end-to-end tests via [Protractor](http://www.protractortest.org/).
-
-## Further help
-
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI Overview and Command Reference](https://angular.io/cli) page.
+> [javascript](JS.md) 
