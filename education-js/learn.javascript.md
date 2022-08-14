@@ -822,3 +822,463 @@ core js  - это полифил(перевод)
  - Symbol.isConcatSpreadable
  - Symbol.iterator
  - Symbol.toPrimitive
+
+
+### Преобразование объектов в примитивы
+
+Объекты можно преобразовать в примитивы 
+и для этого существует hint, их три - default, number, string
+
+Но чтоб использовать их нужно реализовать функцию `Symbol.toPrimitive`
+
+а если нет то toString, valueOf
+
+если их нет то для `number` будет значение "NaN",  а для `string` - "[Ojbect Object]"
+
+`default` 
+        
+        var obj = {}
+        obj[Symbol.toPrimitive] = function(hint) {
+          // должен вернуть примитивное значение
+          // hint равно чему-то одному из: "string", "number" или "default"
+        };
+        
+        obj + 1 // при binary plus, hint = 'default'
+        
+        obj == 1 // hint = 'default'
+
+`number`
+        
+        var obj = {}
+        obj[Symbol.toPrimitive] = function(hint) {
+        // должен вернуть примитивное значение
+        // hint равно чему-то одному из: "string", "number" или "default"
+        };
+        
+        +obj  // hint = 'number'
+        
+        Number(obj) // hint = 'number'
+        
+        obj > 1 // hint = 'number'
+
+`string`
+        
+        var obj = {}
+        obj[Symbol.toPrimitive] = function(hint) {
+        // должен вернуть примитивное значение
+        // hint равно чему-то одному из: "string", "number" или "default"
+        };
+        
+        String(obj)  // hint = 'string'
+        
+        alert(obj) // hint = 'string'
+        
+если не реализован `Symbol.toPrimitive` 
+
+то вызов будет следующим
+
+hint ='default', hint ='number';  `valueOf` -> `toString` -> NaN
+
+hint ='string';  `toString` -> `valueOf` -> "[Object Object]"
+
+
+`Symbol.toPrimitive`, `valueOf`, `toString` должны возвращать примитив либо значение будет проигнорировано
+
+
+### Методы у примитивов
+
+движок javascript создает для примитвных типов обертку над ними
+
+Каждый примитив имеет свой собственный «объект-обёртку», которые называются: String, Number, Boolean и Symbol. Таким образом, они имеют разный набор методов.
+
+К примеру, существует метод str.toUpperCase(), который возвращает строку в верхнем регистре.
+
+Вот, как он работает:
+
+            let str = "Привет";
+            
+            alert( str.toUpperCase() ); // ПРИВЕТ
+            
+           
+###  Объекты 
+
+Цикл `for..in` выполняет перебор всех свойств объекта, а не только цифровых.
+
+`псевдомассивы` – объекты, которые выглядят, как массив. То есть, у них есть свойство `length` и `индексы`, но они также могут иметь дополнительные нечисловые свойства и методы, которые нам обычно не нужны.
+
+
+### Перебираемые объекты
+
+есть два типа `псевдо-массивы` и `перебираемые` 
+
+`псевдо-массивы` `array-likes`
+            
+            let arrayLike = { // есть индексы и свойство length => псевдомассив
+              0: "Hello",
+              1: "World",
+              length: 2
+            };
+            
+            // Ошибка (отсутствует Symbol.iterator)
+            for (let item of arrayLike) {}
+
+
+`перебираемые` `iterable`
+            
+            let range = {
+              from: 1,
+              to: 5
+            };
+            
+            // 1. вызов for..of сначала вызывает эту функцию
+            range[Symbol.iterator] = function() {
+            
+              // ...она возвращает объект итератора:
+              // 2. Далее, for..of работает только с этим итератором, запрашивая у него новые значения
+              return {
+                current: this.from,
+                last: this.to,
+            
+                // 3. next() вызывается на каждой итерации цикла for..of
+                next() {
+                  // 4. он должен вернуть значение в виде объекта {done:.., value :...}
+                  if (this.current <= this.last) {
+                    return { done: false, value: this.current++ };
+                  } else {
+                    return { done: true };
+                  }
+                }
+              };
+            };
+            
+            // теперь работает!
+            for (let num of range) {
+              alert(num); // 1, затем 2, 3, 4, 5
+            }
+
+- Итерируемые объекты – это объекты, которые реализуют метод Symbol.iterator, как было описано выше.
+
+- Псевдомассивы – это объекты, у которых есть индексы и свойство length, то есть, они выглядят как массивы.
+
+
+явный вызов итерируемых объектов
+                let str = "Hello";
+                
+                // делает то же самое, что и
+                // for (let char of str) alert(char);
+                
+                let iterator = str[Symbol.iterator]();
+                
+                while (true) {
+                  let result = iterator.next();
+                  if (result.done) break;
+                  alert(result.value); // выводит символы один за другим
+                }
+
+
+
+
+### Map и Set
+
+Map – это коллекция ключ/значение, как и Object. Но основное отличие в том, что Map позволяет использовать ключи любого типа.
+
+Методы и свойства:
+
+- new Map() – создаёт коллекцию.
+map.set(key, value) – записывает по ключу key значение value.
+map.get(key) – возвращает значение по ключу или undefined, если ключ key отсутствует.
+map.has(key) – возвращает true, если ключ key присутствует в коллекции, иначе false.
+map.delete(key) – удаляет элемент по ключу key.
+map.clear() – очищает коллекцию от всех элементов.
+map.size – возвращает текущее количество элементов.
+
+            
+            interface Map<K, V> {
+                /** Returns an iterable of entries in the map. */
+                [Symbol.iterator](): IterableIterator<[K, V]>;
+            
+                /**
+                 * Returns an iterable of key, value pairs for every entry in the map.
+                 */
+                entries(): IterableIterator<[K, V]>;
+            
+                /**
+                 * Returns an iterable of keys in the map
+                 */
+                keys(): IterableIterator<K>;
+            
+                /**
+                 * Returns an iterable of values in the map
+                 */
+                values(): IterableIterator<V>;
+            }            
+
+
+как добавлять множество значении 
+            
+            // массив пар [ключ, значение]
+            let map = new Map([
+              ['1',  'str1'],
+              [1,    'num1'],
+              [true, 'bool1']
+            ]);
+
+
+Объект `Set` – это особый вид коллекции: «множество» значений (без ключей), где каждое значение может появляться только один раз.
+
+
+как добавлять множество значении 
+
+            // массив [ключ, ключ1]
+            let set = new Set(["апельсин", "яблоко", "банан"]);
+            
+как из массива сделать `map` или `set` и наоборот как сделать массив
+
+
+            var obj = {key:'value'};
+            var map = new Map(Object.entries(obj))
+            
+            var arr = [['key', 'value']];
+            var map = new Map(arr)
+            
+            var obj = Object.fromEntries(map.entries())    
+            var arr = Array.from(map)
+
+                
+
+            var obj = {key: 'value'};
+            var set  = new Set(Object.keys(obj);
+            var set  = new Set(Object.values(obj);
+            
+            var arr = ['keys', 'keys1']
+            var set  = new Set(arr);
+            
+            var obj = Object.fromEntries(set.entries())    
+            var arr = Array.from(set)
+
+
+### Object.keys, values, entries
+Object.keys, values, entries
+
+у всех структур данных есть три метода, которые возвращает итерируемые объекты 
+
+- keys()
+- values()
+- entries()
+ 
+Для простых объектов доступны следующие методы:
+
+- Object.keys(obj) – возвращает массив ключей.
+- Object.values(obj) – возвращает массив значений.
+- Object.entries(obj) – возвращает массив пар [ключ, значение].
+
+
+### Деструктурирующее присваивание
+
+            let [a, b, c] = "abc";
+            let [one, two, three] = new Set([1, 2, 3]);
+            
+            let user = {};
+            [user.name, user.surname] = "Ilya Kantor".split(' ');
+            
+            for (let [key, value] of Object.entries(user)) {
+              alert(`${key}:${value}`); // name:John, затем age:30
+            }
+            
+
+            let {var1, var2} = {var1:…, var2:…}
+
+            let options = {
+              title: "Menu",
+              width: 100,
+              height: 200
+            };
+            let {title, width, height} = options;
+            
+            // { sourceProperty: targetVariable = defaultValue }
+            let {width: w, height: h, title} = options;
+            let {width = 100, height = 200, title} = options;
+            
+            
+            function({
+              incomingProperty: varName = defaultValue
+              ...
+            })
+            
+            let {prop : varName = default, ...rest} = object
+            
+            
+            let [item1 = default, item2, ...rest] = array
+            
+### Формат JSON, метод toJSON
+
+- JSON.stringify
+
+      JSON.stringify(value[, replacer, space])
+      
+      JSON.stringify(meetup, function replacer(key, value) {
+        alert(`${key}: ${value}`);
+      })
+      
+      JSON.stringify(user, null, 2)
+      
+      
+мы можем закостомизировать объект Custom “toJSON”. Добавив метод  `toJSON` в объект
+
+        let room = {
+          number: 23,
+          toJSON() {
+            return this.number;
+          }
+        };
+        JSON.stringify(room); // 23
+
+- JSON.parse
+
+        let value = JSON.parse(str, [reviver]);
+        
+        
+        JSON.parse(str, function(key, value) {
+          if (key == 'date') return new Date(value);
+          return value;
+        });
+
+
+### Рекурсия и стек
+
+связанный список
+        
+        let list = {
+          value: 1,
+          next: {
+            value: 2,
+            next: {
+              value: 3,
+              next: {
+                value: 4,
+                next: null
+              }
+            }
+          }
+        };
+        
+Альтернативный код для создания:
+        
+        let list = { value: 1 };
+        list.next = { value: 2 };
+        list.next.next = { value: 3 };
+        list.next.next.next = { value: 4 };
+
+Список можно легко разделить на несколько частей и впоследствии объединить обратно:
+        
+        let secondList = list.next.next;
+        list.next.next = null;
+
+Для объединения:
+
+        list.next.next = secondList;
+
+Например, для добавления нового элемента нам нужно обновить первый элемент списка:
+
+        let list = { value: 1 };
+        list.next = { value: 2 };
+        list.next.next = { value: 3 };
+        list.next.next.next = { value: 4 };
+        
+        // добавление нового элемента в список
+        list = { value: "new item", next: list };
+
+Чтобы удалить элемент из середины списка, нужно изменить значение next предыдущего элемента:
+
+        list.next = list.next.next;
+
+### Замыкание 
+лучше с нуля прочитать из сайта 
+
+
+### Объект функции, NFE
+
+получить название функции 
+        
+        function getName(){}
+        
+        getName.name // 'getName'
+        
+получить количество аргументов
+        
+        function getName(name, surname){}
+        
+        getName.length // 2
+
+
+функция это и есть по сути объект, но с большими возможностями   
+
+для функции можно задавать свойства как и y объекта
+
+        function getName(){
+        
+        }
+        
+        getName.surname ='abu'
+
+также можно и внутри функции объявить, но свойства появится только при вызове 
+и каждый раз будет перезаписываться 
+
+        function getName(){
+        getName.surname ='nabu baby'
+        }
+        getName.surname ='abu'
+        
+        getName()
+        
+        console.error(getName.surname) // 'nabu baby'
+
+- `Named Function Expression` = `NFE`
+
+            let say = function getName(){}
+            let say = function(){}
+            let say = ()=>{}
+            
+
+- interesting code
+        
+        function sum(a) {
+        
+          let currentSum = a;
+        
+          function f(b) {
+            currentSum += b;
+            return f;
+          }
+        
+          f.toString = function() {
+            return currentSum;
+          };
+        
+          return f;
+        }
+
+
+### Синтаксис "new Function"
+        
+        let func = new Function([arg1, arg2, ...argN], functionBody);
+        
+        let sum = new Function('a', 'b', 'return a + b');
+        sum(1, 2); // 3
+        
+        let sayHi = new Function('alert("Hello")');
+        sayHi(); // Hello
+        
+`new Function` позволяет превратить любую строку в функцию. Например, можно получить новую функцию с сервера и затем выполнить её:
+        
+`new Function` ее lexical environment сразу смотрит на глобальный, а не на родительский 
+
+        function getFunc() {
+          let value = "test";
+        
+          let func = new Function('alert(value)');
+        
+          return func;
+        }
+        
+        getFunc()(); // ошибка: value не определено
