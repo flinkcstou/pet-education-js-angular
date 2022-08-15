@@ -1281,4 +1281,4 @@ Object.keys, values, entries
           return func;
         }
         
-        getFunc()(); // ошибка: value не определено
+        getFunc()(); // ошибка: value не определено~~
